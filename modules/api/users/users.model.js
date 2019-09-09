@@ -1,54 +1,56 @@
-import dbcon, { execQuery } from "../../../db";
-import TABLES from "../../../db/tables";
+import { execQuery } from "../../../db";
+import TABLES from "../tables";
 import SQLString from "sqlstring";
 
 const DEFAULT_START = 0;
 const DEFAULT_LIMIT = 20;
 const model = {};
+const TABLE_NAME = TABLES.LOGIN.TITLE;
+const COLUMNS = TABLES.LOGIN.COLUMNS;
 
 const getSafeUserColumns = () => {
-  let COLUMNS = Object.keys(TABLES.LOGIN.COLUMNS);
-  COLUMNS.splice(COLUMNS.indexOf(TABLES.LOGIN.COLUMNS.password), 1);
-  return COLUMNS.join(",");
+  let TEMP_COLUMNS = Object.keys(COLUMNS);
+  TEMP_COLUMNS.splice(TEMP_COLUMNS.indexOf(TEMP_COLUMNS.password), 1);
+  return TEMP_COLUMNS.join(",");
 }
 
 model.getUsers = async (params = {}) => {
   let START = params.start || DEFAULT_START;
   let LIMIT = params.limit || DEFAULT_LIMIT;
-  const result = await execQuery(`select ${getSafeUserColumns()} from ${TABLES.LOGIN.TITLE} LIMIT ${START}, ${LIMIT}`);
+  const result = await execQuery(`select ${getSafeUserColumns()} from ${TABLE_NAME} LIMIT ${START}, ${LIMIT}`);
   return result;
 }
 
 model.getUserById = async (id) => {
   const result = await execQuery(SQLString.format(`select ${getSafeUserColumns} 
-  from ${TABLES.LOGIN.TITLE}
-  where ${TABLES.LOGIN.COLUMNS.id} = ?`, [id]));
+  from ${TABLE_NAME}
+  where ${COLUMNS.id} = ?`, [id]));
   return result;
 }
 
 model.getUserByLogin = async (login) => {
-  const result = await execQuery(SQLString.format(`select * from ${TABLES.LOGIN.TITLE}
-  where ${TABLES.LOGIN.COLUMNS.login} = ?`, [login]));
+  const result = await execQuery(SQLString.format(`select * from ${TABLE_NAME}
+  where ${COLUMNS.login} = ?`, [login]));
   return result.length ? result[0] : null;
 }
 
 model.getUserByEmail = async (email) => {
   const result = await execQuery(SQLString.format(`select ${getSafeUserColumns()}
-  from ${TABLES.LOGIN.TITLE}
-  where ${TABLES.LOGIN.COLUMNS.email} = `, [email]));
+  from ${TABLE_NAME}
+  where ${COLUMNS.email} = `, [email]));
   return result;
 }
 
 model.getUserByLoginOrEmail = async (login, email) => {
   const result = await execQuery(SQLString.format(`select ${getSafeUserColumns()}
-  from ${TABLES.LOGIN.TITLE}
-  where ${TABLES.LOGIN.COLUMNS.login} = ?
-  OR ${TABLES.LOGIN.COLUMNS.email} = ?`, [login, email]));
+  from ${TABLE_NAME}
+  where ${COLUMNS.login} = ?
+  OR ${COLUMNS.email} = ?`, [login, email]));
   return result;
 }
 
 model.createUser = async (data) => {
-  const save = await execQuery(SQLString.format(`insert into ${TABLES.LOGIN.TITLE} SET ?`, data));
+  const save = await execQuery(SQLString.format(`insert into ${TABLE_NAME} SET ?`, data));
   const result = await model.getUserByLogin(data.login);
   return result;
 }
