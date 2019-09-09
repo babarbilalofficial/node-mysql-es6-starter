@@ -14,10 +14,12 @@ const getSafeUserColumns = () => {
   return TEMP_COLUMNS.join(",");
 }
 
+const SAFE_COLUMNS = getSafeUserColumns();
+
 model.getUsers = async (params = {}) => {
   let START = params.start || DEFAULT_START;
   let LIMIT = params.limit || DEFAULT_LIMIT;
-  const result = await execQuery(`select ${getSafeUserColumns()} from ${TABLE_NAME} LIMIT ${START}, ${LIMIT}`);
+  const result = await execQuery(`select ${SAFE_COLUMNS} from ${TABLE_NAME} LIMIT ${START}, ${LIMIT}`);
   return result;
 }
 
